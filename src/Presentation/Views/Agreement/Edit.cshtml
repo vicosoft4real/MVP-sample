@@ -87,7 +87,7 @@
             
         </div>
         <div class="card-footer">
-            <button type="button" class="btn btn-secondary">Cancle</button>
+            <button type="button" id="cancel" class="btn btn-secondary">Cancle</button>
             <button type="button" class="btn btn-primary" id="saveAgreement">
                 Save changes
             </button>
@@ -113,9 +113,9 @@
            changeYear: true,
            format: "MM/dd/yyyy"         
           });
-      $('#active').change(function (){
-         
-          })
+      $('#cancel').click(function (){
+         window.location.href ='/agreement'
+          });
      $('#groupSelect').change(dropDownChange)
      
      $('#saveAgreement').click(addAgreement);
