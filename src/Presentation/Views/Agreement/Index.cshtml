@@ -1,0 +1,196 @@
+@using System.Text.Json.Serialization
+@model (List<Application.Features.AgreementManagement.Query.AgreementResponse> Agreement, List<Application.Features.Product.GetProductResponse> ProductList, IEnumerable<SelectListItem> Groups, IEnumerable<SelectListItem> Products)
+
+@{
+    ViewBag.Title = "Agreement Management";
+    Layout = "_Layout";
+}
+
+
+<h2>Agreement Managements</h2>
+<div class="container">
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+        Add Agreement
+    </button>
+    <div class="dropdown-divider"></div>
+    <table id="agreement" class="display">
+        <thead>
+        <th>UserName</th>
+        <th>Group Code</th>
+        <th>Product Number</th>
+        <th>Effective Date</th>
+        <th>Expiration Date</th>
+        <th>Product Price</th>
+        <th>New Price</th>
+        <th>Actions</th>
+        </thead>
+        <tbody>
+        @foreach (var item in Model.Agreement)
+        {
+            <tr>
+                <td>@item.Username</td>
+                <td>@item.GroupCode</td>
+                <td>@item.ProductNumber</td>
+                <td>@item.EffectiveDate.ToString("MM/dd/yyyy")</td>
+                <td>@item.ExpirationDate.ToString("MM/dd/yyyy")</td>
+                <td>@item.OldPrice</td>
+                <td>@item.NewPrice</td>
+                <td>
+                    @Html.ActionLink("Edit", "Edit", new { @item.Id }) |
+                    @Html.ActionLink("Delete", "Delete", new { @item.Id })
+
+                </td>
+            </tr>
+        }
+        </tbody>
+
+    </table>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Add New Agreement</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="errorMessage">
+                </div>
+                <form asp-action="Create" novalidate id="agreementForm">
+                    <div class="form-group">
+                        <label for="groupSelect">Group</label>
+                        <select name="GroupId" class="form-control" id="groupSelect" asp-items="@Model.Groups" required>
+                            <option>Select Group</option>
+                        </select>
+                        
+                        <div class="invalid-feedback">
+                            Group is required
+                        </div>
+
+                    </div>
+                    <div class="form-group">
+                        <label for="product">Product</label>
+                        <select name="ProductId" class="form-control" id="product" required>
+                        </select>
+                        <div class="invalid-feedback">
+                            Product is required
+                        </div>
+
+                    </div>
+
+                    <div class="form-group">
+                        <label for="effectiveDate">Effective Date</label>
+                        <input name="EffectiveDate" type="text" class="form-control" id="effectiveDate" placeholder="Pick Effective Date" required>
+                        <div class="invalid-feedback">
+                            Effective date is required
+                        </div>
+
+                    </div>
+                    <div class="form-group">
+                        <label for="expiration">Expiration Date</label>
+                        <input name="Expiration" type="text" class="form-control" id="expiration" placeholder="Pick Expiration  Date" required>
+                        <div class="invalid-feedback">
+                            Expiration date is required
+                        </div>
+
+                    </div>
+                    <div class="form-group">
+                        <label for="productivePrice">Product Price</label>
+                        <input name="ProductPrice" type="number" class="form-control" id="productivePrice" placeholder="New Price" min="0" required>
+                        <div class="invalid-feedback">
+                            New price is required
+                        </div>
+
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newPrice">New Price</label>
+                        <input name="NewPrice" type="number" class="form-control" id="newPrice" placeholder="New Price" min="0" required>
+                        <div class="invalid-feedback">
+                            New price is required
+                        </div>
+
+                    </div>
+                    <div class="form-group form-check">
+                        <input name="Active" type="checkbox" class="form-check-input" id="active" value="true">
+                        <label class="form-check-label" for="active">Active</label>
+                        <div class="invalid-feedback">
+                            Active status is required
+                        </div>
+
+                    </div>
+                    <input type="hidden" name="UserId" value="@User.Identity?.Name"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveAgreement">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts
+{
+    <script>
+     $(document).ready(function () {
+            $('#agreement').DataTable();
+        });
+     $('#effectiveDate').datepicker({
+      changeMonth: true,
+      changeYear: true,
+      format: "MM/dd/yyyy"         
+     });
+      $('#expiration').datepicker({
+           changeMonth: true,
+           changeYear: true,
+           format: "MM/dd/yyyy"         
+          });
+     $('#groupSelect').change(dropDownChange)
+     
+     $('#saveAgreement').click(addAgreement);
+     
+     function addAgreement(){
+         
+         let forms = document.getElementById('agreementForm');
+         if (forms.checkValidity() === false){
+            forms.classList.add('was-validated');
+            return;
+         }
+         let data = $('#agreementForm').serialize();
+         $('#errorMessage').removeClass("alert alert-danger").empty();
+         
+         $.ajax({
+            type: 'POST',
+            url: '/Agreement/Create/',
+            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+            data,
+            success: function (){
+                window.location.href ="/agreement"
+            },
+            error: function (error){
+               
+                let message = "<ul><li>" + error.responseJSON.join('</li><li>') + '</li></ul>'
+                 $('#errorMessage').addClass("alert alert-danger").html(message);
+             
+            }
+         });
+     }
+     function dropDownChange(evt){
+         let selectId = $('#groupSelect').val();
+        $('#product').empty();
+       
+         let products = @Html.Raw(Json.Serialize(Model.ProductList))
+          $.each(products, function (i, item){
+              if (item.groupId === selectId){
+                  $('#product').append($("<option></option>")
+                                                   .attr("value", item.id)
+                                                   .text(item.number));
+              }
+          });
+     }
+    </script>
+
+}

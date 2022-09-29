@@ -1,0 +1,22 @@
+@model Application.Features.AgreementManagement.Query.AgreementByIdResponse
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+
+<form asp-action="Delete">
+    <input type="hidden" asp-for="Id" value="@Model.Id"/>
+    <div class="card">
+        <div class="card card-title">Deleting Agreement</div>
+        <div class="card card-body">
+            <div class="alert alert-danger">
+                Are sure you want to delete the agreement this agreement
+            </div>
+        </div>
+        <div class="card card-footer">
+            <button type="submit" class="btn btn-danger">Delete</button>
+            <button type="button" class="btn btn-primary" id="cancel">Cancel</button>
+        </div>
+    </div>
+</form>

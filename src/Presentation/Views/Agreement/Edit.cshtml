@@ -1,0 +1,164 @@
+@model (Application.Features.AgreementManagement.Query.AgreementByIdResponse itemToEdit, List<Application.Features.Product.GetProductResponse> products, IEnumerable<SelectListItem> groups, IEnumerable<SelectListItem> productList)
+
+@{
+    ViewBag.Title = "Edit Agreement";
+    Layout = "_Layout";
+}
+
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            Editting Agreement
+        </div>
+        <div class="card-body">
+          
+            <div id="errorMessage">
+            </div>
+            <form asp-action="Create" novalidate id="agreementForm">
+                <div class="form-group">
+                    <label for="groupSelect">Group</label>
+                    <select name="GroupId" asp-for="itemToEdit.GroupId"   class="form-control" id="groupSelect" asp-items="Model.groups" required>
+                    </select>
+                    <div class="invalid-feedback">
+                        Group is required
+                    </div>
+            
+                </div>
+                <div class="form-group">
+                    <label for="product">Product</label>
+                    <select asp-for="itemToEdit.ProductId" name="ProductId"  class="form-control" asp-items="Model.productList" id="product" required>
+                    </select>
+                    <div class="invalid-feedback">
+                        Product is required
+                    </div>
+            
+                </div>
+            
+                <div class="form-group">
+                    <label for="effectiveDate">Effective Date</label>
+                    <input asp-for="itemToEdit.EffectiveDate" name="EffectiveDate" type="text" class="form-control" id="effectiveDate" placeholder="Pick Effective Date" required>
+                    <div class="invalid-feedback">
+                        Effective date is required
+                    </div>
+            
+                </div>
+                <div class="form-group">
+                    <label for="expiration">Expiration Date</label>
+                    <input asp-for="itemToEdit.Expiration" name="Expiration" type="text" class="form-control" id="expiration" placeholder="Pick Effective Date" required>
+                    <div class="invalid-feedback">
+                        Expiration date is required
+                    </div>
+                            
+                </div>
+                
+            
+                <div class="form-group">
+                    <label for="productivePrice">Product Price</label>
+                    <input asp-for="itemToEdit.ProductPrice" name="ProductPrice" type="number" class="form-control" id="productivePrice" placeholder="New Price" min="0" required>
+                    <div class="invalid-feedback">
+                        New price is required
+                    </div>
+            
+                </div>
+            
+                <div class="form-group">
+                    <label for="newPrice">New Price</label>
+                    <input asp-for="itemToEdit.NewPrice" name="NewPrice" type="number" class="form-control" id="newPrice" placeholder="New Price" min="0" required>
+                    <div class="invalid-feedback">
+                        New price is required
+                    </div>
+            
+                </div>
+                <div class="form-group form-check">
+                    <input asp-for="itemToEdit.Active" 
+                           name="Active" type="checkbox" 
+                           class="form-check-input" 
+                           id="active"
+                    >
+                    <label class="form-check-label" for="active">Active</label>
+                    <div class="invalid-feedback">
+                        Active status is required
+                    </div>
+            
+                </div>
+                <input type="hidden" id="userId" name="UserId" value="@Model.itemToEdit.UserId"/>
+                <input type="hidden" id="id" name="Id" value="@Model.itemToEdit.Id"/>
+            </form>
+            
+        </div>
+        <div class="card-footer">
+            <button type="button" class="btn btn-secondary">Cancle</button>
+            <button type="button" class="btn btn-primary" id="saveAgreement">
+                Save changes
+            </button>
+           
+            
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script>
+     $(document).ready(function () {
+            $('#agreement').DataTable();
+        });
+     $('#effectiveDate').datepicker({
+      changeMonth: true,
+      changeYear: true,
+      format: "MM/dd/yyyy"         
+     });
+      $('#expiration').datepicker({
+           changeMonth: true,
+           changeYear: true,
+           format: "MM/dd/yyyy"         
+          });
+      $('#active').change(function (){
+         
+          })
+     $('#groupSelect').change(dropDownChange)
+     
+     $('#saveAgreement').click(addAgreement);
+     
+     function addAgreement(){
+         
+         let forms = document.getElementById('agreementForm');
+         if (forms.checkValidity() === false){
+            forms.classList.add('was-validated');
+            return;
+         }
+        let data = $('#agreementForm').serialize();
+        
+         $('#errorMessage').removeClass("alert alert-danger").empty();
+         $(this).html(' <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...')
+         $.ajax({
+            type: 'POST',
+            url: '/Agreement/Edit',
+            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+            data,
+            success: function (){
+                window.location.href ="/agreement"
+            },
+            error: function (error){
+               $('#saveAgreement').html("Save Changes");
+                let message = "<ul><li>" + error.responseJSON.join('</li><li>') + '</li></ul>'
+                 $('#errorMessage').addClass("alert alert-danger").html(message);
+             
+            }
+         });
+     }
+     function dropDownChange(){
+         let selectId = $('#groupSelect').val();
+        $('#product').empty();
+       
+         let products = @Html.Raw(Json.Serialize(Model.products))
+          $.each(products, function (i, item){
+              if (item.groupId === selectId){
+                  $('#product').append($("<option></option>")
+                                                   .attr("value", item.id)
+                                                   .text(item.number));
+              }
+          });
+     }
+    </script>
+}
